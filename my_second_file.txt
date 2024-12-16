@@ -1,1 +1,2 @@
-Add new content to the second file to push the file to the git 
+Add new content to the second file to push the file to the git.
+To my second file i have addec lot of things to make the process
