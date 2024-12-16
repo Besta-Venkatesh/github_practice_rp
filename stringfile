@@ -1,0 +1,12 @@
+Around the 1970s/1980s the term information engineering methodology (IEM) was created to
+describe database design and the use of software for data analysis and processing.[3][4] These techniques were
+intended to be used by database administrators (DBAs) and by systems analysts based upon an understanding of the operational
+processing needs of organizations for the 1980s. In particular, these techniques were meant to help bridge the
+gap between strategic business planning and information systems. A key early contributor
+(often called the "father" of information engineering methodology) was the Australian Clive Finkelstein,
+who wrote several articles about it between 1976 and 1980, and also co-authored an influential Savant Institute
+report on it with James Martin.[5][6][7] Over the next few years, Finkelstein continued work in a more
+business-driven direction, which was intended to address a rapidly changing business environment; Martin
+continued work in a more data processing-driven direction. From 1983 to 1987, Charles M. Richter, guided by
+Clive Finkelstein, played a significant role in revamping IEM as well as helping to design the IEM software
+product (user data), which helped automate IEM.
