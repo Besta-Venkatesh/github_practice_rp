@@ -1,0 +1,8 @@
+pwd (shows the current file position)
+mkdir new_folder (name)
+cd ~ (to the base location)
+git init (to create a staging area where the data is pushed to local repositorey)
+git config --global user.name 'venkatesh' (to create user who are doing the modification in the repositorey)
+git config --global user.email 'venky1998.31@gmail.com' (email of the user who are doing modifications)
+touch (filename) to add a new file to the local repositorey
+notepad filename.txt (To open a file in the notepad)
