@@ -1,0 +1,9 @@
+** to_json function
+loc_branch = pd.DataFrame(all_rows,columns =loc_columns )
+to_json("file_name.json", orient = 'types[any one]')
+	types = ['split',records,index,columns,values]
+loc_branch.to_json('loc_branch.json', orient='split')
+loc_branch.to_json('loc_branch_columns',orient='columns')
+loc_branch.to_json('loc_branch_index',orient='index')
+loc_branch.to_json('loc_branch_records',orient='records')
+loc_branch.to_json('loc_branch_values',orient='values')
