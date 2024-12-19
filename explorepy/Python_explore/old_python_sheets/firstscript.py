@@ -119,7 +119,7 @@ finally:
     if pg_db_connection :
         ref_todb_cursor.close()
         pg_db_connection.close()
-        print('Database connection closed')
+        # print('Database connection closed')
 
 
 textdata = '''Parental Level of Education: Indicates the educational background of the student's family.
@@ -145,6 +145,9 @@ with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','a') as
 
 with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','r') as file:
     print(file.readlines())
-print(df_data)
+# print(df_data)
 # import json
 # print(json.dumps(data),type(json.dumps(data)))
+
+def sums(a,b):
+    return a+b
