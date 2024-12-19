@@ -23,12 +23,13 @@
 x1 = 'hello world'
 
 xyz = 'hello world'[::]
-print(x1,xyz)
-print(id(x1),id(xyz),end='\tjkhk ')
-print(x1,xyz)
-print(list('875348756')*2)
 
-print('string my be alowed{2} in between two other {0}strings'.format('vnky',9,['erer',546]))
+if __name__ == "__main__":
+    print(x1,xyz)
+    print(id(x1),id(xyz),end='\tjkhk ')
+    print(x1,xyz)
+    print(list('875348756')*2)
+    print('string my be alowed{2} in between two other {0}strings'.format('vnky',9,['erer',546]))
 
 
 var1 = []
@@ -51,9 +52,9 @@ def ram():
 
 lst = [[1,23,4,4],['dfsdf','wfewe','wefwf','effwf']]
 lst[1][2] = '988'
-
-print(lst)
-print(tuple('venkatesh'))
+if  __name__ == "__main__":
+    print(lst)
+    print(tuple('venkatesh'))
 
 
 tup1 = tuple([[1,23,4,4],['dfsdf','wfewe','wefwf','effwf']])
@@ -93,7 +94,8 @@ try:
                         uom varchar );'''
     ref_todb_cursor.execute(create_table_query)
     pg_db_connection.commit()
-    logging.info(' Table Created:')
+    if __name__ == "__main__":
+        logging.info(' Table Created:')
 
     insert_script = f'''
         insert into {schema}.item_local
@@ -101,7 +103,8 @@ try:
     '''
     ref_todb_cursor.execute(insert_script)
     pg_db_connection.commit()
-    logging.info(' Data Inserted:')
+    if __name__ == "__main__":
+        logging.info(' Data Inserted:')
 
     get_query_data =f'''select * from {schema}.item_local fetch first 10 rows only'''
 
@@ -109,11 +112,13 @@ try:
     rows = ref_todb_cursor.fetchall()
     columns = [desc[0] for desc in ref_todb_cursor.description]
     df = pd.DataFrame(rows, columns=columns)
-    print(df)
-    logging.info(' Data Fetched:')
+    if __name__ == "__main__":
+        print(df)
+        logging.info(' Data Fetched:')
     # print('Table created',schema)
 except (Exception, psycopg2.Error) as error:
-    print("Error while connecting to PostgreSQL", error)
+    if __name__ == "__main__":
+        print("Error while connecting to PostgreSQL", error)
 
 finally:
     if pg_db_connection :
@@ -130,21 +135,21 @@ Reading Score: Measures performance in reading, allowing for insights into liter
 Writing Score: Evaluates students' writing skills, which can be analyzed to assess overall literacy and expression.'''
 import csv
 linelist = []
-with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','a') as file:
-    file.write(textdata)
-#     # print(readrows)
-with open(r'C:\Users\user\pythontest\explorepy\Datasets\studentdata.csv','r') as file:
-    datafromfile = csv.reader(file)
-    for i in datafromfile:
-        linelist=linelist + [i]
-    # print(datafromfile)
-columns = linelist[0]
-df_data = pd.DataFrame(linelist[1::],columns=columns)
-with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','a') as file:
-    file.writelines(linelist)
+# with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','a') as file:
+#     file.write(textdata)
+# #     # print(readrows)
+# with open(r'C:\Users\user\pythontest\explorepy\Datasets\studentdata.csv','r') as file:
+#     datafromfile = csv.reader(file)
+#     for i in datafromfile:
+#         linelist=linelist + [i]
+#     # print(datafromfile)
+# columns = linelist[0]
+# df_data = pd.DataFrame(linelist[1::],columns=columns)
+# with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','a') as file:
+#     file.writelines(linelist)
 
-with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','r') as file:
-    print(file.readlines())
+# with open(r'C:\Users\user\pythontest\explorepy\Datasets\writetofile.txt','r') as file:
+#     print(file.readlines())
 # print(df_data)
 # import json
 # print(json.dumps(data),type(json.dumps(data)))
