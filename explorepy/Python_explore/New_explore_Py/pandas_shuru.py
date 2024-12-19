@@ -32,7 +32,7 @@ connections  = pg2.connect(
 )
 ref_cursor  = connections.cursor()
 ref_cursor.execute("select i.itemid,i.itemdesc,i.itemcode,i.mrp from zishta2024.item i")
-rows = ref_cursor.fetchmany()
+rows = ref_cursor.fetchall()
 columns = [desc[0] for desc in ref_cursor.description]
 df = pd.DataFrame(rows,columns=columns)
-# print(sums(4,6))
+print(df)
