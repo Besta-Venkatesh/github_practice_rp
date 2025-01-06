@@ -1,3 +1,26 @@
+DataFrames---------- Different Methods to construct DataFrame
+data1 = { 'Name': ['Alice', 'Bob', 'Charlie'],
+ 	'Age': [25, 30, 35], 
+ 	'City': ['New York', 'Los Angeles', 'Chicago'] }
+
+data2 = [ {'Name': 'Alice', 'Age': 25, 'City': 'New York'}, 
+		{'Name': 'Bob', 'Age': 30, 'City': 'Los Angeles'}, 
+		{'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'} ]
+
+data3 = [ ['Alice', 25, 'New York'], 
+		['Bob', 30, 'Los Angeles'], 
+		['Charlie', 35, 'Chicago'] ] 
+columns = ['Name', 'Age', 'City']
+
+df4 = pd.read_csv('data.csv') print(df)
+df5 = pd.read_excel('data.xlsx') print(df)
+------------------------------------------------------------------------------------------------------------------------------
+Remove Duplicates: Use the drop_duplicates() method to keep only unique state names.
+unique_states = df['statename'].drop_duplicates()
+
+
+
+----------------------------------------------------------------------------------------------------------------
 ** to_json function
 loc_branch = pd.DataFrame(all_rows,columns =loc_columns )
 to_json("file_name.json", orient = 'types[any one]')

@@ -1,0 +1,86 @@
+DataFrames---------- Different Methods to construct DataFrame
+It is the main object in pandas.it is used to represent data with rows and columns(table or excel spreadsheet)
+
+links - pandas.io
+
+data1 = { 'Name': ['Alice', 'Bob', 'Charlie'],
+ 	'Age': [25, 30, 35], 
+ 	'City': ['New York', 'Los Angeles', 'Chicago'] }
+
+data2 = [ {'Name': 'Alice', 'Age': 25, 'City': 'New York'}, 
+		{'Name': 'Bob', 'Age': 30, 'City': 'Los Angeles'}, 
+		{'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'} ]
+
+data3 = [ ['Alice', 25, 'New York'], 
+		['Bob', 30, 'Los Angeles'], 
+		['Charlie', 35, 'Chicago'] ] 
+columns = ['Name', 'Age', 'City']
+
+data4 = [ ('Alice', 25, 'New York'), 
+		('Bob', 30, 'Los Angeles'), 
+		('Charlie', 35, 'Chicago') ] 
+columns = ['Name', 'Age', 'City']
+
+df5 = pd.read_csv('data.csv') print(df)
+df6 = pd.read_excel('data.xlsx','sheetno') print(df)
+
+*df.index to know the index
+*to find noof rows and columns =df.shape
+* to print top 5 in df  = df.head()
+* to print end 5 in df  = df.tail()
+* to print data from df using indexing is =  df[5:8], df[:]
+* to print df columns = df.column
+* to print the data of specific columns in df = df.colunmname or df['colunmname'] or df[['column1','column2','column3']]
+* to know the type of the column in a dataframe is type(['column1']) -- each column in dataframe is a series
+
+* to know basic arthematic operations 
+	min = df['column1'].min()
+	max = df['column1'].min()
+	mean = df['column1'].mean()
+	std= df['column1'].std()
+
+*to describe the dataframe which will represent statictics of the df = df.describe()
+
+** we can perform conditional fetch data from data frame like where clause in sql, examples
+1	df[df.columnname > 1000]
+2	df[df.columnname == 'Ramana'(value)]
+3	df[df.columnname == df.columnname.max()] this will return all the columns.
+4	df['df.columnname'][df.columnname >= 599] for only particular column
+
+*to set anycolumn as a index = df.set_index('columnname', inplace = True)
+*to reset the index in dataframe = df.reset_index(inpace = True)
+** to know any row using index = df.loc(indexvalue)
+--------------------------------------------------------------
+** read csv
+*df=pd.read_csv('file_name.csv',skiprows = 1) or 
+*df = pd.read_csv('file_name.csv', header= 1) or
+*df= pd.read_csv('file_name.csv',header = none ,name =['columnname','columnname','columnname'.....]) this will give column names if we dont have column names in csv file
+
+*df=pd.read_csv('file_name.csv',nrows =50) read only 50 rows from csv file 
+*df = pd.read_csv('file_name.csv', na_values = ['','Not availabale','any value you want']) all the represent values will convert into NaN 
+
+*df = pd.read_csv('file_name.csv', na_values = {"column1":['any value you want','value2','value3'],"column2":['any value you want','value2','value3'],"column3":['any value you want','value2','value3']}) you can convert any value to NaN in any perticular column
+
+**write csv
+df.to_csv('filename.csv',index=False) with out index
+df.to_csv('filename.csv',columns = ['column1','column2','column3'],header = False) with out header and necessory columns
+df[[]].to_csv('filename.csv',index=False) with out index
+-----------------------------------------------------------------
+**read exce
+*df = pd.read_excel
+------------------------------------------------------------------------------------------------------------------------------
+Remove Duplicates: Use the drop_duplicates() method to keep only unique state names.
+unique_states = df['statename'].drop_duplicates()
+
+
+
+----------------------------------------------------------------------------------------------------------------
+** to_json function
+loc_branch = pd.DataFrame(all_rows,columns =loc_columns )
+to_json("file_name.json", orient = 'types[any one]')
+	types = ['split',records,index,columns,values]
+loc_branch.to_json('loc_branch.json', orient='split')
+loc_branch.to_json('loc_branch_columns',orient='columns')
+loc_branch.to_json('loc_branch_index',orient='index')
+loc_branch.to_json('loc_branch_records',orient='records')
+loc_branch.to_json('loc_branch_values',orient='values')

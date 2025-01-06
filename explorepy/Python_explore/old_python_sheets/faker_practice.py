@@ -14,7 +14,7 @@ print(dt)
 
 # Number of rows to generate
 num_rows = 100
-print(fake.time(),fake.date_this_year(),fake.date_time_this_year(),fake.date_time_between_dates(start_date,End_date))
+# print(fake.time(),fake.date_this_year(),fake.date_time_this_year(),fake.date_time_between_dates(start_date,End_date))
 # Generate random data
 data = {
     'id': [i for i in range(1, num_rows + 1)],
@@ -29,7 +29,7 @@ data = {
 # Create DataFrame
 df = pd.DataFrame(data)
 lst_columns = ['name','age','address']
-print(df)  # Print first 5 rows for brevity
+# print(df)  # Print first 5 rows for brevity
 
 df.to_excel(r"C:\Users\user\pythontest\explorepy\Datasets\excel_practice.xlsx", index=False)
 
