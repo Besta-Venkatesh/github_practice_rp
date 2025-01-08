@@ -1,29 +1,17 @@
 import pandas as pd
 import psycopg2
-'''
-import pandas as pd
-from sqlalchemy import create_engine
-# Create an engine
-engine = create_engine('postgresql://postgres:log@localhost/zishta2024dump')
-# Execute a query and load data into a DataFrame
-df = pd.read_sql_query("SELECT * FROM zishta2024.item", engine)
-# Print DataFrame
-print(df)
+import random
+import json
+import boto3 
+from io import BytesIO
+from datetime import datetime
 
-req_column= ['itemid', 'cancel', 'modifiedon', 'createdon','company', 'transid', 'itemdesc',
-               'itemcode', 'item_hsn', 'taxcategorycode', 'taxrate',  'active',  'itemname','sellingunit', 'stdcost', 'mrp',
-                 'zishtaitemcode',  'comboitem','stdsellingprice', 'shopify_id', 'itemcategoryid', 'itemcategory',
-                  'productcategory', 'hsnno', 'purchaseac','amazonitemcode', 'amazon_code']
-
-val = ''.join('a.'+i.strip('')+',' for i in req_column)
-
-print(val)
-'''
 connect_todb = psycopg2.connect(
     host = 'localhost',
     database = 'zishta2024dump',
     user = 'postgres',
     password = 'log',
+    port = 5432
 )
 schema = 'zishta2024'
 extract_query = connect_todb.cursor()
@@ -43,53 +31,67 @@ location =  extract_query.fetchall()
 columns = [desc[0] for desc in extract_query.description]
 location_details = pd.DataFrame(location ,columns=columns)
 #  Item Details
-extract_query.execute(f""" select a.itemid,a.cancel,a.modifiedon,a.createdon,a.company,a.transid,a.itemdesc,a.itemcode,a.item_hsn,
-                      a.taxcategorycode,a.taxrate,a.active,a.itemname,a.sellingunit,a.stdcost,a.mrp,a.zishtaitemcode,a.comboitem,
-                      a.stdsellingprice,a.shopify_id,a.itemcategoryid,a.itemcategory,a.productcategory,a.hsnno,a.purchaseac,
-                      a.amazonitemcode,a.amazon_code from {schema}.item a """)
+extract_query.execute(f""" select itemid,itemdesc, itemcode, item_hsn,taxrate, active, itemname, sellingunit, 
+                      stdcost, mrp, zishtaitemcode, comboitem, stdsellingprice from {schema}.item a """)
 items = extract_query.fetchall()
 columns = [desc[0] for desc in extract_query.description]
 item_df = pd.DataFrame(items ,columns=columns)
 # customer details
-extract_query.execute(f"""select a.retail_customerid,a.cancel,a.createdby,a.createdon,a.mobileno,a.customer_name,a.gstno,a.address,
-                      a.branchid,a.locationid,a.baddress,a.bcountry,a.bstate,a.bcity,a.daddress,a.dcountry,a.dstate,a.dcity,a.bmobileno,
-                      a.email,a.bpincode,a.dpincode,a.bcountry_code,a.bstate_code,a.dcountry_code,a.dstate_code 
-                      from {schema}.retail_customer a where (a.mobileno is not null or a.mobileno<>'')""")
+extract_query.execute(f"""select a.mobileno,a.customer_name,
+                      a.branchid,a.locationid,a.daddress,a.dcountry,a.dstate,a.dcity,a.dpincode 
+                      from {schema}.retail_customer a where a.mobileno is not null and a.mobileno not in ('0','')""")
 customers_data = extract_query.fetchall()
 cust_columns = [desc[0] for desc in extract_query.description]
 cust_data= pd.DataFrame(customers_data,columns=cust_columns)
-print(len(cust_data))
+# print(len(cust_data))
 
+# Creating a order details and push to s3
+order_columns =['itemid','itemdesc', 'itemcode',"order_qty",'mrp','salesorder_id']
+order_items_df = pd.DataFrame(columns=columns)
 
+with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json','r') as json_file:
+    json_data = json.load(json_file)
+last_orderno,last_seriesno = json_data['Details'][0]['orderno'],json_data['Details'][0]['item_sequw']
+ 
+rand_customers_index = random.sample(range(len(cust_data)), random.randint(90, 120))
+rand_customers = cust_data.iloc[rand_customers_index].copy()
+ # Update 'Orderno' and 'salesorder_id' columns using .loc to avoid warnings 
 
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+rand_customers.loc[:, 'Orderno'] = [last_orderno + ordnum for ordnum in range(1, len(rand_customers_index) + 1)] 
+rand_customers.loc[:, 'salesorder_id'] = [last_seriesno + ordnum for ordnum in range(len(rand_customers_index))]
 
-from_address = "your_email@example.com"
-to_address = "recipient@example.com"
-subject = "Email Notification"
-body = "This is a test email notification from Python."
+# print(rand_customers)
+# creating random order items.
+item_df = item_df[['itemid','itemdesc', 'itemcode','mrp']]
+order_item_list  = pd.DataFrame(columns=['itemid','itemdesc', 'itemcode',"order_qty",'mrp','salesorder_id'])
+for noof_order in rand_customers['salesorder_id']:
+    noof_items_prorder = random.randint(1,10)
+    random_items = random.sample(range(len(item_df)),noof_items_prorder)
+    orders_list = {'itemid':[item_df['itemid'].iloc[k] for k in random_items],
+                   'itemdesc':[item_df['itemdesc'].iloc[k] for k in random_items],
+                    'itemcode':[item_df['itemcode'].iloc[k] for k in random_items],
+                    "order_qty":[random.randint(1,8) for _ in range(0,len(random_items))],
+                    'mrp':[item_df['mrp'].iloc[k] for k in random_items],
+                    'salesorder_id':[noof_order] * len(random_items)}
+    orders_list = pd.DataFrame(orders_list)
+    order_item_list = pd.concat([order_item_list,orders_list],ignore_index=True)
+    # break
+json_data['Details'][0]['orderno'] += len(rand_customers_index)
+json_data['Details'][0]['item_sequw'] += len(rand_customers_index)
 
-msg = MIMEMultipart()
-msg['From'] = from_address
-msg['To'] = to_address
-msg['Subject'] = subject
-msg.attach(MIMEText(body, 'plain'))
+with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json', 'w') as file: 
+    json.dump(json_data, file, indent=4)
 
-smtp_server = 'smtp.gmail.com'
-smtp_port = 587
-smtp_user = 'your_email@example.com'
-smtp_password = 'your_password'
+buffer = BytesIO() 
+# Create a Pandas Excel writer using the XlsxWriter as the engine. 
+with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer: 
+    rand_customers.to_excel(writer, sheet_name='OrderedCustomer', index=False) 
+    order_item_list.to_excel(writer, sheet_name='ItemsOrdered', index=False) 
+# Ensure the buffer is set to the beginning 
+buffer.seek(0) 
+# Initialize the boto3 client 
+s3_client = boto3.client('s3') 
+# Upload the file to S3 
+file_name = f"new_orders_{datetime.now().strftime('%d%m%y%H%M%S')}.xlsx"
+s3_client.upload_fileobj(buffer, 'zishtacoretransit-process', file_name) 
 
-try:
-    server = smtplib.SMTP(smtp_server, smtp_port)
-    server.starttls()
-    server.login(smtp_user, smtp_password)
-    text = msg.as_string()
-    server.sendmail(from_address, to_address, text)
-    print("Email sent successfully!")
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    server.quit()
