@@ -3,12 +3,16 @@ import psycopg2
 import random
 import json
 import boto3 
-from io import BytesIO
-from datetime import datetime
+import io
+# from io import BytesIO
+from datetime import datetime , timezone, timedelta 
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from cryptography.fernet import Fernet
+import time
 
 success_msg =f""" 
 Dear Asperients, 
@@ -71,40 +75,6 @@ cust_data= pd.DataFrame(customers_data,columns=cust_columns)
 order_columns =['itemid','itemdesc', 'itemcode',"order_qty",'mrp','salesorder_id']
 order_items_df = pd.DataFrame(columns=columns)
 
-
-def trigger_the_mail(message):
-    with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json','r') as json_file:
-        json_data = json.load(json_file)
-
-    from_address = json_data['Details'][0]["email"]
-    to_address = [j["Email"] for j in json_data['Details'][1::]]
-    subject = "Job Status Notification!"
-    body = message
-
-    msg = MIMEMultipart()
-    msg['From'] = from_address
-    msg['To'] = ', '.join([j["Email"] for j in json_data['Details'][1::]]) 
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    smtp_user = json_data['Details'][0]["email"]
-    smtp_password = json_data['Details'][0]["password"]
-
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        text = msg.as_string()
-        for new_mail in to_address:
-            server.sendmail(from_address, new_mail, text)
-        # print("Email sent successfully!")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        server.quit()
-
 try:
     with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json','r') as json_file:
         json_data = json.load(json_file)
@@ -139,27 +109,71 @@ try:
     with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json', 'w') as file: 
         json.dump(json_data, file, indent=4)
 
-    buffer = BytesIO() 
-    # Create a Pandas Excel writer using the XlsxWriter as the engine. 
-    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer: 
-        rand_customers.to_excel(writer, sheet_name='OrderedCustomer', index=False) 
-        order_item_list.to_excel(writer, sheet_name='ItemsOrdered', index=False) 
-    # Ensure the buffer is set to the beginning 
-    buffer.seek(0) 
+    # to keep the buffer open for further use file creation has kept in the function.
+    def generate_excel_buffer(rand_customers,order_item_list):
+        buffer = io.BytesIO() 
+        # Create a Pandas Excel writer using the XlsxWriter as the engine. 
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer: 
+            rand_customers.to_excel(writer, sheet_name='OrderedCustomer', index=False) 
+            order_item_list.to_excel(writer, sheet_name='ItemsOrdered', index=False) 
+        # Ensure the buffer is set to the beginning 
+        buffer.seek(0)
+        return buffer 
     # Initialize the boto3 client 
+
     s3_client = boto3.client('s3') 
     # Upload the file to S3 
-    file_name = f"new_orders_{datetime.now().strftime('%d%m%y%H%M%S')}.xlsx"
-    s3_client.upload_fileobj(buffer, 'zishtacoretransit-process', file_name) 
-    trigger_the_mail(success_msg)
-    from psycopg2 import sql        #importing Sql Module from psycopg2 liberary
+    file_name = f"new_orders_details.xlsx"         #{datetime.now().strftime('%d%m%y%H%M%S')}
+    s3_client.upload_fileobj(generate_excel_buffer(rand_customers,order_item_list), 'zishtacoretransit-process', file_name) 
+
+    def trigger_the_mail(message,attachment_buffer):
+        with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json','r') as json_file:
+            json_data = json.load(json_file)
+
+        from_address = json_data['Details'][0]["email"]
+        to_address = [j["Email"] for j in json_data['Details'][1::]]
+        subject = "Job Status Notification!"
+        body = message
+
+        msg = MIMEMultipart()
+        msg['From'] = from_address
+        msg['To'] = ', '.join([j["Email"] for j in json_data['Details'][1::]]) 
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment_buffer.read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment', filename='new_orders_details.xlsx')
+        msg.attach(part)
+
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
+        smtp_user = json_data['Details'][0]["email"]
+        smtp_password = json_data['Details'][0]["password"]
+
+        try:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            text = msg.as_string()
+            for new_mail in to_address:
+                server.sendmail(from_address, new_mail, text)
+            print("Email sent successfully!")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            server.quit()
+
+    trigger_the_mail(success_msg,generate_excel_buffer(rand_customers,order_item_list))         #Email function call
+    from psycopg2 import sql        #importing Sql Module from psycopg2 liber
     insert_intolog = sql.SQL('''insert into zishta2024.job_log(id,job_name,status,message,success) 
                              values(%s,%s,%s,%s,%s)''')
-    extract_query.execute(insert_intolog,(f"SQ{datetime.now().strftime('%d%m%y%H%M%S')}",'Success trigger.','Success',f"Job Succesfully completed at {datetime.now().strftime('%d%m%y%H%M%S')}",'T'))
+    extract_query.execute(insert_intolog,(f" SQ{datetime.now().strftime('%d%m%y%H%M%S')}",'Success trigger.','Success',f"Job Succesfully completed at {datetime.now().strftime('%d%m%y%H%M%S')}",'T'))
     connect_todb.commit()
 except Exception as e:
     print(f'{e}')
-    trigger_the_mail(Failure_message)
+    trigger_the_mail(Failure_message,generate_excel_buffer(rand_customers,order_item_list))
     insert_intolog = sql.SQL('insert into zishta2024.job_log(id,job_name,status,message,success) values(%s,%s,%s,%s,%s)')
     extract_query.execute(insert_intolog,(f"REJ{datetime.now().strftime('%d%m%y%H%M%S')}",'Failed trigger.','Failed',f"Error Msg: {e}",'F'))
     connect_todb.commit()
