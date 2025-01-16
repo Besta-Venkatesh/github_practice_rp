@@ -77,7 +77,7 @@ order_items_df = pd.DataFrame(columns=columns)
 
 try:
     with open(r'C:\Users\user\pythontest\explorepy\Project 1\DataSet\email_pwd.json','r') as json_file:
-        json_data = json.load(json_file)
+        json_data = json.load(json_file) 
     last_orderno,last_seriesno = json_data['Details'][0]['orderno'],json_data['Details'][0]['item_sequw']
     
     rand_customers_index = random.sample(range(len(cust_data)), random.randint(90, 120))
