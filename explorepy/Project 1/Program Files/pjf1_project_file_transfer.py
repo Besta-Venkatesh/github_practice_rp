@@ -1,3 +1,4 @@
+from faker import Faker
 import pandas as pd
 import psycopg2
 import random
@@ -83,10 +84,12 @@ try:
     rand_customers_index = random.sample(range(len(cust_data)), random.randint(90, 120))
     rand_customers = cust_data.iloc[rand_customers_index].copy()
     # Update 'Orderno' and 'salesorder_id' columns using .loc to avoid warnings 
-
-    rand_customers.loc[:, 'Orderno'] = [last_orderno + ordnum for ordnum in range(1, len(rand_customers_index) + 1)] 
-    rand_customers.loc[:, 'salesorder_id'] = [last_seriesno + ordnum for ordnum in range(len(rand_customers_index))]
-
+    fake = Faker()
+    start_date = datetime.now() - timedelta(hours= 24)
+    end_date = datetime.now()
+    rand_customers.loc[:, 'orderno'] = [last_orderno + ordnum for ordnum in range(1, len(rand_customers_index) + 1)] 
+    rand_customers.loc[:, 'salesorder_id'] = [last_seriesno + ordnum for ordnum in range(1,len(rand_customers_index) + 1)]
+    rand_customers.loc[:, 'order_date'] = sorted([fake.date_time_between_dates(start_date,end_date) for _ in range( len(rand_customers_index))])
     # print(rand_customers)
     # creating random order items.
     item_df = item_df[['itemid','itemdesc', 'itemcode','mrp']]
@@ -177,3 +180,4 @@ except Exception as e:
     insert_intolog = sql.SQL('insert into zishta2024.job_log(id,job_name,status,message,success) values(%s,%s,%s,%s,%s)')
     extract_query.execute(insert_intolog,(f"REJ{datetime.now().strftime('%d%m%y%H%M%S')}",'Failed trigger.','Failed',f"Error Msg: {e}",'F'))
     connect_todb.commit()
+
