@@ -68,3 +68,25 @@ try:
 
 except Exception as e:
     print(f"Error during reload: {e}")
+ 
+
+
+#Different Method to insert data to database tables--------------------------------------------------------
+
+import pandas as pd
+import psycopg2
+from psycopg2.extras import execute_values
+
+# Example DataFrame
+df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [25, 30]})
+
+# Create a connection to the database
+conn = psycopg2.connect("dbname=database_name user=username password=password host=host")
+cur = conn.cursor()
+
+# Insert DataFrame into PostgreSQL table
+execute_values(cur, "INSERT INTO your_table_name (name, age) VALUES %s", df.values)
+
+conn.commit()
+cur.close()
+conn.close()

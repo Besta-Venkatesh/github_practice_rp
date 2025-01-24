@@ -89,7 +89,7 @@ try:
     end_date = datetime.now()
     rand_customers.loc[:, 'orderno'] = [last_orderno + ordnum for ordnum in range(1, len(rand_customers_index) + 1)] 
     rand_customers.loc[:, 'salesorder_id'] = [last_seriesno + ordnum for ordnum in range(1,len(rand_customers_index) + 1)]
-    rand_customers.loc[:, ' '] = sorted([fake.date_time_between_dates(start_date,end_date) for _ in range( len(rand_customers_index))])
+    rand_customers.loc[:, 'docdate'] = sorted([fake.date_time_between_dates(start_date,end_date) for _ in range( len(rand_customers_index))])
     # print(rand_customers)
     # creating random order items.
     item_df = item_df[['itemid','itemdesc', 'itemcode','mrp']]
